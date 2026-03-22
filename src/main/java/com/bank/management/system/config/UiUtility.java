@@ -1,6 +1,7 @@
 package com.bank.management.system.config;
 
 import com.bank.management.system.entity.Account;
+import com.bank.management.system.entity.BankData;
 import com.bank.management.system.entity.History;
 import com.bank.management.system.exceptions.NoTransectionFound;
 import com.bank.management.system.service.AccountService;
@@ -210,20 +211,26 @@ public class UiUtility {
 
         createBtn.addActionListener(e -> {
 
-            service.openAccount(
-                    nameField.getText(),
-                    Double.parseDouble(balanceField.getText()),
-                    bankField.getText(),
-                    ifscField.getText(),
-                    userField.getText(),
-                    new String(passField.getPassword()),
-                    Integer.parseInt(new String(mpinField.getPassword()))
-            );
+            try {
+                service.openAccount(
+                        nameField.getText(),
+                        Double.parseDouble(balanceField.getText()),
+                        bankField.getText(),
+                        ifscField.getText(),
+                        userField.getText(),
+                        new String(passField.getPassword()),
+                        Integer.parseInt(new String(mpinField.getPassword()))
+                );
+                JOptionPane.showMessageDialog(frame, "Account Created Successfully 👍");
+                frame.dispose();
+                showLoginUI();
+            }
+            catch (IllegalArgumentException i) {
+                JOptionPane.showMessageDialog(null,
+                        "Fields cannot be empty",
+                        "Error",JOptionPane.ERROR_MESSAGE);
+            }
 
-            JOptionPane.showMessageDialog(frame, "Account Created Successfully");
-
-            frame.dispose();
-            showLoginUI();
         });
     }
 
@@ -477,61 +484,83 @@ public class UiUtility {
     }
 
     public static void transferUI() {
+
         if (!verifyMPin()) return;
-        String acc = (String) JOptionPane.showInputDialog(null,"Receiver Account:",
-                "Transfer Amount",
-                JOptionPane.PLAIN_MESSAGE,
-                smallIcon,
-                null,
-                "82705XXXXXXXX");
-        String ifsc = (String) JOptionPane.showInputDialog(null,"IFSC code",
-                "Transfer Amount",
-                JOptionPane.PLAIN_MESSAGE,
-                smallIcon,
-                null,
-                " ");
-        String amt = (String) JOptionPane.showInputDialog(null,"Amount:","Transection Status",
-                JOptionPane.PLAIN_MESSAGE,
-                smallIcon,
-                null,"0.0");
-        if (acc != null && amt != null) {
+
+        try {
+            String[] options = {"Same Bank", "Other Bank"};
+
+            String transferType = (String) JOptionPane.showInputDialog(
+                    null,
+                    "Select Transfer Type:",
+                    "Transfer",
+                    JOptionPane.PLAIN_MESSAGE,
+                    smallIcon,
+                    options,
+                    options[0]
+            );
+
+            if (transferType == null) return;
+
+            String acc = JOptionPane.showInputDialog(null,
+                    "Enter Receiver Account Number:");
+
+            if (acc == null || acc.isEmpty()) return;
+
+            String ifsc;
+
+            if (transferType.equals("Same Bank")) {
+                ifsc = loggedInAccount.getIfscCode();
+            }
+
+            else {
+                Object[] banks = BankData.BANK_IFSC_MAP.keySet().toArray();
+
+                String selectedBank = (String) JOptionPane.showInputDialog(
+                        null,
+                        "Select Bank:",
+                        "Bank Selection",
+                        JOptionPane.PLAIN_MESSAGE,
+                        smallIcon,
+                        banks,
+                        banks[0]
+                );
+
+                if (selectedBank == null) return;
+
+                ifsc = BankData.BANK_IFSC_MAP.get(selectedBank);
+
+                JOptionPane.showMessageDialog(null,
+                        "Selected Bank: " + selectedBank +
+                                "\nIFSC: " + ifsc);
+            }
+
+            String amt = JOptionPane.showInputDialog(null, "Enter Amount:");
+
+            if (amt == null || amt.isEmpty()) return;
+
             String msg = service.transfer(
                     loggedInAccount,
                     Long.parseLong(acc),
                     ifsc,
                     Double.parseDouble(amt)
             );
+
             refreshAccount();
-            switch (msg) {
-                case "Transfer successful 👍":
-                    JOptionPane.showMessageDialog(null,
-                            "Transfer Successful 👍\n" +
-                                    "Account Balance: " + loggedInAccount.getBalance(), "Transaction Status",
-                            JOptionPane.INFORMATION_MESSAGE,
-                            smallIcon);
-                    break;
-                case "Receiver account not found ❌":
-                    JOptionPane.showMessageDialog(null,
-                            "Receiver account not found ❌\n" +
-                                    "Please enter valid Account Number ⚠️", "Transaction Status",
-                            JOptionPane.INFORMATION_MESSAGE,
-                            smallIcon);
-                    break;
-                case "Insufficient balance ❌":
-                    JOptionPane.showMessageDialog(null,
-                            "Insufficient balance ❌\n" +
-                                    " ", "Transaction Status",
-                            JOptionPane.INFORMATION_MESSAGE,
-                            smallIcon);
-                    break;
-                default:
-                    JOptionPane.showMessageDialog(null,
-                            "Invalid amount ❌\n" +
-                                    " ", "Transaction Status",
-                            JOptionPane.INFORMATION_MESSAGE,
-                            smallIcon);
-                    break;
-            }
+
+            JOptionPane.showMessageDialog(null,
+                    msg + "\nBalance: " + loggedInAccount.getBalance(),
+                    "Transaction Status",
+                    JOptionPane.INFORMATION_MESSAGE,
+                    smallIcon);
+
+        } catch (Exception e) {
+
+            JOptionPane.showMessageDialog(null,
+                    e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE,
+                    smallIcon);
         }
     }
 

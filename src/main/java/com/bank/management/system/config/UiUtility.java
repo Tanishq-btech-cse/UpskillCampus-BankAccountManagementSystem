@@ -447,28 +447,27 @@ public class UiUtility {
 
             if (amt == null || amt.isEmpty()) return;
 
-            double amount = Double.parseDouble(amt);
-            String orderId = RazorpayService.createOrder(amount);
-            java.awt.Desktop.getDesktop().browse(
-                    new java.net.URI("https://razorpay.com/")
-            );
-
             int result = JOptionPane.showConfirmDialog(
                     null,
-                    "Complete payment in browser.\nClick YES after success.",
+                    "Complete payment in browser.",
                     "Payment",
                     JOptionPane.YES_NO_OPTION
             );
 
-            if (result == JOptionPane.YES_OPTION) {
 
+            if (result == JOptionPane.YES_OPTION) {
+                double amount = Double.parseDouble(amt);
+                String orderId = RazorpayService.createOrder(amount);
+                java.awt.Desktop.getDesktop().browse(
+                        new java.net.URI("https://razorpay.com/")
+                );
                 String msg = service.deposit(loggedInAccount, amount);
                 refreshAccount();
 
                 JOptionPane.showMessageDialog(null,
                         msg + "\nBalance: " + loggedInAccount.getBalance());
-            }
 
+            }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e.getMessage());
         }

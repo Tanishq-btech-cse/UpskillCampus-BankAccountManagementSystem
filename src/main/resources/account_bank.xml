@@ -24,12 +24,12 @@
 
         <!-- Database connection URL -->
         <property name="hibernate.connection.url">
-            jdbc:mysql://localhost:3306/Management
+            jdbc:mysql://10.233.228.149:3306/Management
         </property>
 
         <!-- Database username -->
         <property name="hibernate.connection.username">
-            root
+            tanishq
         </property>
 
         <!-- Database password -->

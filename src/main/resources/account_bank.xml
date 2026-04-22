@@ -24,7 +24,7 @@
 
         <!-- Database connection URL -->
         <property name="hibernate.connection.url">
-            jdbc:mysql://140.238.246.140:3306/Management
+            jdbc:mysql://80.225.215.190:3306/Management
         </property>
 
         <!-- Database username -->

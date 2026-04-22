@@ -303,8 +303,33 @@ public class UiUtility {
         );
 
         if (option == JOptionPane.OK_OPTION) {
+            String input = new String(pf.getPassword()).trim();
 
-            int entered = Integer.parseInt(new String(pf.getPassword()));
+            if (input.isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        null,
+                        "MPIN is required",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE,
+                        smallIcon
+                );
+                return false;
+            }
+
+            int entered;
+
+            try {
+                entered = Integer.parseInt(input);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(
+                        null,
+                        "MPIN must contain digits only",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE,
+                        smallIcon
+                );
+                return false;
+            }
 
             if (entered == loggedInAccount.getMPin()) {
                 return true;
@@ -492,28 +517,32 @@ public class UiUtility {
                 null,
                 "0.0"
         );
-        if (input != null) {
-            String msg = service.withdraw(loggedInAccount, Double.parseDouble(input));
+
+        if (input == null || input.trim().isEmpty()) {
+            return;
+        }
+
+        try {
+            String msg = service.withdraw(loggedInAccount, Double.parseDouble(input.trim()));
             refreshAccount();
-            if(msg.equals("Withdrawal successful 👍")) {
-                JOptionPane.showMessageDialog(null,
-                        "Withdraw Successful 👍\n" +
-                                "Account Balance: " + loggedInAccount.getBalance(), "Transaction Status",
-                        JOptionPane.INFORMATION_MESSAGE,
-                        smallIcon);
-            } else if (msg.equals("Enter valid amount")) {
-                JOptionPane.showMessageDialog(null,
-                        "Enter valid amount ⚠️\n" +
-                                " ", "Transaction Status",
-                        JOptionPane.INFORMATION_MESSAGE,
-                        smallIcon);
-            } else {
-                JOptionPane.showMessageDialog(null,
-                        "Insufficient balance ❌\n" +
-                                " ", "Transaction Status",
-                        JOptionPane.INFORMATION_MESSAGE,
-                        smallIcon);
-            }
+
+            JOptionPane.showMessageDialog(null,
+                    msg + "\nAccount Balance: " + loggedInAccount.getBalance(),
+                    "Transaction Status",
+                    JOptionPane.INFORMATION_MESSAGE,
+                    smallIcon);
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(null,
+                    "Withdraw amount must be numeric",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE,
+                    smallIcon);
+        } catch (RuntimeException ex) {
+            JOptionPane.showMessageDialog(null,
+                    ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE,
+                    smallIcon);
         }
     }
 

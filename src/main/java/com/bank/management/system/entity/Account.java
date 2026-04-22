@@ -97,6 +97,17 @@ public class Account {
     @Column(name = "mpin", nullable = false)
     private int mPin;
 
+    /**
+     * List of all transactions associated with this account.
+     * Maintains the complete transaction history.
+     */
+    @OneToMany(mappedBy = "account",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY)
+    private List<History> historyList = new ArrayList<>();
+
+
     public String getBankName() {
         return bankName;
     }
@@ -112,17 +123,6 @@ public class Account {
     public void setIfscCode(String ifscCode) {
         this.ifscCode = ifscCode;
     }
-
-    /**
-     * List of all transactions associated with this account.
-     * Maintains the complete transaction history.
-     */
-    @OneToMany(mappedBy = "account",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY)
-    private List<History> historyList = new ArrayList<>();
-
 
     public long getAccountNumber() {
         return accountNumber;
